@@ -82,12 +82,11 @@ if (!user) {
 
   await prisma.user.create({
     data: {
-      telegramId: chatId.toString(),
+      telegramChatId: chatId.toString(),   // ✅ FIXED
       name: "Telegram User",
       email: `${chatId}@telegram.com`,
-      password: "telegram_auth",
-      passwordHash: "telegram_auth",   // ✅ ADD THIS
-      username: `user_${chatId}`
+      username: `user_${chatId}`,
+      passwordHash: "telegram_auth"
     }
   });
 
