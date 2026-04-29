@@ -86,7 +86,8 @@ if (!user) {
       name: "Telegram User",
       email: `${chatId}@telegram.com`,
       password: "telegram_auth",
-      username: `user_${chatId}`   // ✅ ADD THIS LINE
+      passwordHash: "telegram_auth",   // ✅ ADD THIS
+      username: `user_${chatId}`
     }
   });
 
