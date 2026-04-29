@@ -1,0 +1,83 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: postly_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postly:postly_secret@postgres:5432/postly_db
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - postly_network
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: postly_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postly
+      POSTGRES_PASSWORD: postly_secret
+      POSTGRES_DB: postly_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postly -d postly_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - postly_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: postly_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - postly_network
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: postly_redis_ui
+    restart: unless-stopped
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - postly_network
+
+networks:
+  postly_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
