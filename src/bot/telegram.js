@@ -77,13 +77,15 @@ Please use /post to get started!
   botInstance.onText(/\/status/, async (msg) => {
     const chatId = msg.chat.id;
     const user = await prisma.user.findUnique({ where: { telegramChatId: chatId.toString() } });
-   if (!user) {
+ if (!user) {
   await bot.sendMessage(chatId, "⚠️ Creating your account...");
 
   await prisma.user.create({
     data: {
       telegramId: chatId.toString(),
-      name: "Telegram User"
+      name: "Telegram User",
+      email: `${chatId}@telegram.com`,   // ✅ required
+      password: "telegram_auth"          // ✅ required (dummy)
     }
   });
 
