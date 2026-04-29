@@ -15,10 +15,12 @@ const STATE_EXPIRY = 30 * 60;
 const getBot = () => {
   if (!bot && token) {
     bot = new TelegramBot(token, { polling: false });
+
+    // ✅ ADD THIS LINE
+    registerHandlers(bot);
   }
   return bot;
 };
-
 const setupTelegramBot = async (app) => {
   if (!token) return;
   bot = getBot();
