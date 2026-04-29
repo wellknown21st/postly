@@ -27,7 +27,7 @@ app.use(cors({
 }));
 
 // Raw body for Telegram webhook signature verification
-app.use('/webhook/telegram', express.raw({ type: 'application/json' }));
+app.use('/webhook/telegram', express.json());
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
