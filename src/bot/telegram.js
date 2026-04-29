@@ -77,8 +77,18 @@ Please use /post to get started!
   botInstance.onText(/\/status/, async (msg) => {
     const chatId = msg.chat.id;
     const user = await prisma.user.findUnique({ where: { telegramChatId: chatId.toString() } });
-    if (!user) return botInstance.sendMessage(chatId, "Please link your account first via the web app.");
+   if (!user) {
+  await bot.sendMessage(chatId, "⚠️ Creating your account...");
 
+  await prisma.user.create({
+    data: {
+      telegramId: chatId.toString(),
+      name: "Telegram User"
+    }
+  });
+
+  return bot.sendMessage(chatId, "✅ Account linked! Try again.");
+}
     const posts = await prisma.post.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: 'desc' },
