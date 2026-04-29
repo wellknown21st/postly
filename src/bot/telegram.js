@@ -134,11 +134,28 @@ if (!user) {
     const user = await prisma.user.findUnique({ where: { telegramChatId: chatId.toString() } });
     if (!user) return botInstance.sendMessage(chatId, "Please link your account first via the web app.");
 
-    const accounts = await prisma.socialAccount.findMany({ where: { userId: user.id, isActive: true } });
-    if (accounts.length === 0) return botInstance.sendMessage(chatId, "Please link at least one social account in the web app before posting.");
+   let accounts = await prisma.socialAccount.findMany({ 
+  where: { userId: user.id, isActive: true } 
+});
 
-    const availablePlatforms = accounts.map(a => a.platform);
+// 🔥 Auto-create demo account if none exists
+if (accounts.length === 0) {
+  await botInstance.sendMessage(chatId, "⚠️ No social account found. Creating demo account...");
 
+  const demoAccount = await prisma.socialAccount.create({
+    data: {
+      userId: user.id,
+      platform: "TWITTER",
+      accountId: "demo_account",
+      accountName: "Demo Twitter",
+      accessToken: "demo_token"
+    }
+  });
+
+  accounts = [demoAccount];
+}
+
+    const availablePlatforms = accounts.map(a => a.platform.toUpperCase());
     await setUserState(chatId, { step: 'IDEA', platforms: availablePlatforms, userId: user.id });
     
     botInstance.sendMessage(chatId, "📝 Let's create a post! Please type your idea (max 500 chars):");
